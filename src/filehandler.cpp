@@ -12,7 +12,7 @@ void FileHandler::saveUser(const User* user) {
     if (file.is_open()) {
         file << user->getID() << "," 
              << user->getUsername() << "," 
-             << user->getPassword() << ","  // Placeholder password
+             << "123" << ","  // Placeholder password
              << user->getRole() << "\n";
         file.close();
     }
@@ -49,20 +49,21 @@ bool FileHandler::hasVoted(const std::string& userID, const std::string& electio
 
     while (std::getline(file, line)) {
         std::stringstream ss(line);
-        std::string voterID, candidateID;
+        std::string voterID, candidateID, eID;
         std::getline(ss, voterID, ',');
         std::getline(ss, candidateID, ',');
+        std::getline(ss, eID, ',');
 
-        if (voterID == userID) {
-            return true;  // The voter has already voted
+        if (voterID == userID && eID == electionID) {
+            return true;  // The voter has already voted in this election
         }
     }
 
     return false;
 }
 
-void FileHandler::saveVote( User* voter, Candidate* candidate) {
-    Vote vote(voter, candidate);
+void FileHandler::saveVote( User* voter, Candidate* candidate, const std::string& electionID) {
+    Vote vote(voter, candidate, electionID);
     vote.saveVote();
 }
 
@@ -73,4 +74,35 @@ void FileHandler::displayVotes() {
     while (std::getline(file, line)) {
         std::cout << line << std::endl;
     }
+}
+
+void FileHandler::countVotes(const std::string& electionID, Candidate** candidates, int numCandidates) {
+    std::ifstream file("data/votes.txt");
+    std::string line;
+
+    int* voteCount = new int[numCandidates]();  // Array to store vote counts
+
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string voterID, candidateID, eID;
+        std::getline(ss, voterID, ',');
+        std::getline(ss, candidateID, ',');
+        std::getline(ss, eID, ',');
+
+        if (eID == electionID) {
+            for (int i = 0; i < numCandidates; ++i) {
+                if (candidates[i]->getID() == candidateID) {
+                    ++voteCount[i];  // Increment vote count for the candidate
+                }
+            }
+        }
+    }
+
+    // Display vote count
+    for (int i = 0; i < numCandidates; ++i) {
+        std::cout << "Candidate " << candidates[i]->getUsername() << " has " 
+                  << voteCount[i] << " votes." << std::endl;
+    }
+
+    delete[] voteCount;  // Clean up dynamically allocated memory
 }
