@@ -5,28 +5,44 @@
 #include "filehandler.h"
 
 int main() {
-    std::string username;
-    std::cout << "Enter username to load: ";
-    std::cin >> username;
+    std::cout << "=== Welcome to Castify ===\n";
+    std::cout << "1. Login\n2. Register\nChoose option: ";
+    int choice;
+    std::cin >> choice;
 
-    User* user = FileHandler::loadUserByUsername(username);
+    std::string username, password, role, id;
+    User* user = nullptr;
 
-    if (user) {
-        std::cout << "User loaded!\n";
-        user->displayProfile();
-    } else {
-        std::cout << "User not found. Registering...\n";
-        std::string id = "U" + std::to_string(rand() % 1000); // Simple ID
-        std::string role;
+    if (choice == 1) {
+        std::cout << "Enter username: ";
+        std::cin >> username;
+        std::cout << "Enter password: ";
+        std::cin >> password;
+
+        user = FileHandler::loadUserWithPassword(username, password);
+        if (user) {
+            std::cout << "Login successful!\n";
+            user->displayProfile();
+        } else {
+            std::cout << "Invalid username or password.\n";
+        }
+
+    } else if (choice == 2) {
+        std::cout << "Enter new username: ";
+        std::cin >> username;
+        std::cout << "Enter password: ";
+        std::cin >> password;
         std::cout << "Enter role (admin/voter/candidate): ";
         std::cin >> role;
 
-        if (role == "admin") user = new Admin(id, username, "123");
-        else if (role == "voter") user = new Voter(id, username, "123");
-        else if (role == "candidate") user = new Candidate(id, username, "123");
+        id = "U" + std::to_string(rand() % 1000); // Simple ID gen
+
+        if (role == "admin") user = new Admin(id, username, password);
+        else if (role == "voter") user = new Voter(id, username, password);
+        else if (role == "candidate") user = new Candidate(id, username, password);
 
         FileHandler::saveUser(user);
-        std::cout << "User registered!\n";
+        std::cout << "Registration successful!\n";
         user->displayProfile();
     }
 

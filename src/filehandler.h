@@ -3,12 +3,11 @@
 
 #include "user.h"
 #include <string>
-#include <fstream>
 
 class FileHandler {
 public:
     static void saveUser(const User* user);
-    static User* loadUserByUsername(const std::string& username);
+    static User* loadUserWithPassword(const std::string& username, const std::string& password);
 };
 
 #endif

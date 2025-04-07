@@ -10,16 +10,16 @@ void FileHandler::saveUser(const User* user) {
     if (file.is_open()) {
         file << user->getID() << "," 
              << user->getUsername() << "," 
-             << "123" << ","  // Placeholder password
+             << user->getPassword() << ","
              << user->getRole() << "\n";
         file.close();
     }
 }
 
-User* FileHandler::loadUserByUsername(const std::string& username) {
+User* FileHandler::loadUserWithPassword(const std::string& username, const std::string& password) {
     std::ifstream file("data/users.txt");
     std::string line;
-    
+
     while (std::getline(file, line)) {
         std::stringstream ss(line);
         std::string id, uname, pass, role;
@@ -28,7 +28,7 @@ User* FileHandler::loadUserByUsername(const std::string& username) {
         std::getline(ss, pass, ',');
         std::getline(ss, role, ',');
 
-        if (uname == username) {
+        if (uname == username && pass == password) {
             if (role == "admin")
                 return new Admin(id, uname, pass);
             else if (role == "voter")

@@ -15,3 +15,7 @@ std::string User::getUsername() const {
 std::string User::getRole() const {
     return role;
 }
+
+std::string User::getPassword() const {
+    return password;
+}

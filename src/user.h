@@ -16,6 +16,7 @@ public:
     std::string getID() const;
     std::string getUsername() const;
     std::string getRole() const;
+    std::string getPassword() const;
     virtual ~User() {}
 };
 
