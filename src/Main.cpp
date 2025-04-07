@@ -1,51 +1,23 @@
 #include <iostream>
-#include "admin.h"
-#include "voter.h"
 #include "candidate.h"
+#include "election.h"
 #include "filehandler.h"
 
 int main() {
-    std::cout << "=== Welcome to Castify ===\n";
-    std::cout << "1. Login\n2. Register\nChoose option: ";
-    int choice;
-    std::cin >> choice;
+    // Create a new election
+    Election election("E1", "Presidential Election 2025", "2025-06-01", "2025-06-30");
+    election.displayElectionDetails();
 
-    std::string username, password, role, id;
-    User* user = nullptr;
+    // Create candidates
+    Candidate* candidate1 = new Candidate("C1", "JohnDoe", "password123");
+    Candidate* candidate2 = new Candidate("C2", "JaneSmith", "password456");
 
-    if (choice == 1) {
-        std::cout << "Enter username: ";
-        std::cin >> username;
-        std::cout << "Enter password: ";
-        std::cin >> password;
+    // Add candidates to the election
+    election.addCandidate(candidate1);
+    election.addCandidate(candidate2);
 
-        user = FileHandler::loadUserWithPassword(username, password);
-        if (user) {
-            std::cout << "Login successful!\n";
-            user->displayProfile();
-        } else {
-            std::cout << "Invalid username or password.\n";
-        }
+    // Display candidates in the election
+    election.displayCandidates();
 
-    } else if (choice == 2) {
-        std::cout << "Enter new username: ";
-        std::cin >> username;
-        std::cout << "Enter password: ";
-        std::cin >> password;
-        std::cout << "Enter role (admin/voter/candidate): ";
-        std::cin >> role;
-
-        id = "U" + std::to_string(rand() % 1000); // Simple ID gen
-
-        if (role == "admin") user = new Admin(id, username, password);
-        else if (role == "voter") user = new Voter(id, username, password);
-        else if (role == "candidate") user = new Candidate(id, username, password);
-
-        FileHandler::saveUser(user);
-        std::cout << "Registration successful!\n";
-        user->displayProfile();
-    }
-
-    delete user;
     return 0;
 }
