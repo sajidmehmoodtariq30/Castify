@@ -20,6 +20,7 @@ public:
     void addCandidate(Candidate* candidate);
     void displayElectionDetails() const;
     void displayCandidates() const;
+    std::string getID() const ;
 };
 
 #endif

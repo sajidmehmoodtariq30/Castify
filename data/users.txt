@@ -1,1 +1,1 @@
-U41,sajid,0000,admin
+U41,sajid,0000,voter

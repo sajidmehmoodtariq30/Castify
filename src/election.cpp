@@ -1,6 +1,8 @@
 #include "election.h"
 #include <iostream>
 
+std::string Election::getID() const { return id; }
+
 Election::Election(std::string id, std::string title, std::string startDate, std::string endDate)
     : id(id), title(title), startDate(startDate), endDate(endDate), numCandidates(0), maxCandidates(5) {
     candidates = new Candidate*[maxCandidates];  // Allocate space for 5 candidates
@@ -9,17 +11,14 @@ Election::Election(std::string id, std::string title, std::string startDate, std
 Election::~Election() {
     // Free the dynamically allocated memory for candidates
     for (int i = 0; i < numCandidates; ++i) {
-        delete candidates[i];  // Only delete candidate objects
+        delete candidates[i];
     }
-    delete[] candidates;  // Delete the array itself
+    delete[] candidates;
 }
 
-
 void Election::addCandidate(Candidate* candidate) {
-    std::cout << "Adding candidate: " << candidate->getUsername() << "\n";
-
     if (numCandidates >= maxCandidates) {
-        std::cout << "Resizing candidates array...\n";
+        // If array is full, expand it (doubling size)
         maxCandidates *= 2;
         Candidate** newCandidates = new Candidate*[maxCandidates];
         for (int i = 0; i < numCandidates; ++i) {
@@ -30,8 +29,6 @@ void Election::addCandidate(Candidate* candidate) {
     }
     candidates[numCandidates++] = candidate;
 }
-
-
 
 void Election::displayElectionDetails() const {
     std::cout << "Election ID: " << id << "\nTitle: " << title << "\nStart Date: " << startDate << "\nEnd Date: " << endDate << std::endl;

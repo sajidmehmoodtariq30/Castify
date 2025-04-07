@@ -2,15 +2,17 @@
 #include "admin.h"
 #include "voter.h"
 #include "candidate.h"
+#include "vote.h"
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 void FileHandler::saveUser(const User* user) {
     std::ofstream file("data/users.txt", std::ios::app);
     if (file.is_open()) {
         file << user->getID() << "," 
              << user->getUsername() << "," 
-             << user->getPassword() << ","
+             << user->getPassword() << ","  // Placeholder password
              << user->getRole() << "\n";
         file.close();
     }
@@ -39,4 +41,36 @@ User* FileHandler::loadUserWithPassword(const std::string& username, const std::
     }
 
     return nullptr;
+}
+
+bool FileHandler::hasVoted(const std::string& userID, const std::string& electionID) {
+    std::ifstream file("data/votes.txt");
+    std::string line;
+
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string voterID, candidateID;
+        std::getline(ss, voterID, ',');
+        std::getline(ss, candidateID, ',');
+
+        if (voterID == userID) {
+            return true;  // The voter has already voted
+        }
+    }
+
+    return false;
+}
+
+void FileHandler::saveVote( User* voter, Candidate* candidate) {
+    Vote vote(voter, candidate);
+    vote.saveVote();
+}
+
+void FileHandler::displayVotes() {
+    std::ifstream file("data/votes.txt");
+    std::string line;
+
+    while (std::getline(file, line)) {
+        std::cout << line << std::endl;
+    }
 }
