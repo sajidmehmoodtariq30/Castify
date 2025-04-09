@@ -3,7 +3,8 @@
 
 #include <string>
 
-class User {
+class User
+{
 protected:
     std::string id;
     std::string username;
@@ -13,6 +14,7 @@ protected:
 public:
     User(std::string id, std::string username, std::string password, std::string role);
     virtual void displayProfile() = 0;
+    virtual void displayMenu() = 0;
     std::string getID() const;
     std::string getUsername() const;
     std::string getRole() const;

@@ -7,6 +7,7 @@ class Voter : public User {
 public:
     Voter(std::string id, std::string username, std::string password);
     void displayProfile() override;
+    void displayMenu() override;
 };
 
 #endif
