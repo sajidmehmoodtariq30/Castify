@@ -15,6 +15,9 @@ public:
     void updateCandidate();
     void deleteCandidate();
     void addVoter();
+    void createElection();
+    void viewElections();
+    void startElection();
 };
 
 #endif

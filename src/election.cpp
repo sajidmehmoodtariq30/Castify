@@ -1,19 +1,24 @@
 #include "election.h"
 #include <iostream>
+#include <ctime> // For time functions
 
 std::string Election::getID() const { return id; }
 
-Election::Election(std::string id, std::string title, std::string startDate, std::string endDate)
-    : id(id), title(title), startDate(startDate), endDate(endDate), numCandidates(0), maxCandidates(5) {
-    candidates = new Candidate*[maxCandidates];  // Allocate space for 5 candidates
+Election::Election(std::string id, std::string title, time_t startTime, time_t endTime, std::string type, int criteria)
+    : id(id), title(title), startTime(startTime), endTime(endTime), electionType(type), eligibilityCriteria(criteria), numCandidates(0), maxCandidates(5) {
+    candidates = new Candidate*[maxCandidates];
 }
 
 Election::~Election() {
-    // Free the dynamically allocated memory for candidates
     for (int i = 0; i < numCandidates; ++i) {
-        delete candidates[i];
+        delete candidates[i]; // Free each Candidate object
     }
-    delete[] candidates;
+    delete[] candidates; // Free the array
+}
+
+bool Election::isElectionActive() const {
+    time_t currentTime = time(nullptr); // Get the current time
+    return currentTime >= startTime && currentTime <= endTime;
 }
 
 void Election::addCandidate(Candidate* candidate) {
@@ -30,8 +35,20 @@ void Election::addCandidate(Candidate* candidate) {
     candidates[numCandidates++] = candidate;
 }
 
+void Election::setElectionType(const std::string& type) {
+    electionType = type;
+}
+
+void Election::setEligibilityCriteria(int criteria) {
+    eligibilityCriteria = criteria;
+}
+
 void Election::displayElectionDetails() const {
-    std::cout << "Election ID: " << id << "\nTitle: " << title << "\nStart Date: " << startDate << "\nEnd Date: " << endDate << std::endl;
+    std::cout << "Election ID: " << id << "\nTitle: " << title
+              << "\nStart Time: " << ctime(&startTime)
+              << "End Time: " << ctime(&endTime)
+              << "Type: " << electionType
+              << "\nEligibility: " << eligibilityCriteria << std::endl;
 }
 
 void Election::displayCandidates() const {
