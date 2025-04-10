@@ -39,7 +39,7 @@ int main() {
             // Use polymorphism to display the appropriate menu
             user->displayMenu();
 
-            delete user; // Clean up dynamically allocated memory
+            delete user;
         } else {
             std::cout << "Invalid choice. Please try again.\n";
         }
