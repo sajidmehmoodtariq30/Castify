@@ -1,4 +1,60 @@
 #include "admin.h"
+#include "utils.h"
+    std::string id, title, type, criteria;
+    time_t start, end;
+};
+
+
+    std::string id, name, party;
+    int votes;
+};
+
+
+    std::stringstream ss(line);
+    std::string startStr, endStr;
+    if (!std::getline(ss, info.id, ',')) return false;
+    if (!std::getline(ss, info.title, ',')) return false;
+    if (!std::getline(ss, startStr, ',')) return false;
+    if (!std::getline(ss, endStr, ',')) return false;
+    if (!std::getline(ss, info.type, ',')) return false;
+    if (!std::getline(ss, info.criteria, ',')) info.criteria = "";
+    info.start = std::stol(startStr);
+    info.end = std::stol(endStr);
+    return true;
+}
+
+
+    return now >= info.start && now <= info.end;
+}
+
+
+    std::string status = isElectionActive(info, now) ? "[ACTIVE]" : "[INACTIVE]";
+    std::cout << info.id << ": " << info.title << " (" << info.type << ") " << status << std::endl;
+}
+
+
+    std::stringstream ss(line);
+    std::string votesStr;
+    if (!std::getline(ss, info.id, ',')) return false;
+    if (!std::getline(ss, info.name, ',')) return false;
+    if (!std::getline(ss, info.party, ',')) return false;
+    if (!std::getline(ss, votesStr, ',')) votesStr = "0";
+    info.votes = std::stoi(votesStr);
+    return true;
+}
+
+
+    std::cout << info.id << ": " << info.name << " (" << info.party << ") Votes: " << info.votes << std::endl;
+}
+
+void Admin::viewResults(Election* election) {
+    if (election) {
+        election->displayResults();
+    } else {
+        std::cout << "Invalid election selected!" << std::endl;
+    }
+}
+
 #include "filehandler.h"
 #include <iostream>
 #include <fstream>
@@ -24,7 +80,8 @@ void Admin::displayMenu() {
         std::cout << "5. Add Voter\n";
         std::cout << "6. Create Election\n";
         std::cout << "7. View Elections\n";
-        std::cout << "8. Logout\n";
+        std::cout << "8. Edit Election\n";
+        std::cout << "9. Logout\n";
         std::cout << "Enter your choice: ";
         int choice;
         std::cin >> choice;
@@ -44,6 +101,8 @@ void Admin::displayMenu() {
         } else if (choice == 7) {
             viewElections();
         } else if (choice == 8) {
+            editElection();
+        } else if (choice == 9) {
             std::cout << "Logging out...\n";
             break;
         } else {
@@ -158,7 +217,189 @@ void Admin::addVoter()
     std::cout << "Voter added successfully.\n";
 }
 
-void Admin::createElection() {
+void saveElectionToFile(Election* election) {
+    std::ofstream file("data/elections.txt", std::ios::app);
+    if (file.is_open()) {
+        file << election->getID() << "," << election->title << "," << election->startTime << "," << election->endTime << "," << election->getElectionType() << "," << election->getEligibilityCriteria() << "\n";
+        file.close();
+    }
+    // Save candidates for this election
+    std::ofstream cfile("data/candidates_" + election->getID() + ".txt");
+    for (int i = 0; i < election->numCandidates; ++i) {
+        Candidate* c = election->candidates[i];
+        cfile << c->getID() << "," << c->getUsername() << "," << c->getParty() << "," << c->getVoteCount() << "\n";
+    }
+    cfile.close();
+}
+
+void loadElectionsFromFile() {
+    // Stub: implement if needed for memory-based management
+}
+
+void Admin::editElection() {
+    std::string electionID;
+    std::cout << "Enter Election ID to edit: ";
+    std::cin >> electionID;
+    // Edit duration
+    std::ifstream infile("data/elections.txt");
+    std::ofstream tempfile("data/elections_temp.txt");
+    std::string line;
+    bool found = false;
+    while (std::getline(infile, line)) {
+        std::stringstream ss(line);
+        std::string id, title, start, end, type, criteria;
+        std::getline(ss, id, ',');
+        if (id == electionID) {
+            found = true;
+            std::cout << "Editing election: " << line << std::endl;
+            std::cout << "Enter new start time (epoch): ";
+            std::cin >> start;
+            std::cout << "Enter new end time (epoch): ";
+            std::cin >> end;
+            tempfile << id << "," << title << "," << start << "," << end << "," << type << "," << criteria << "\n";
+        } else {
+            tempfile << line << "\n";
+        }
+    }
+    infile.close();
+    tempfile.close();
+    remove("data/elections.txt");
+    rename("data/elections_temp.txt", "data/elections.txt");
+    // Edit candidates
+    std::cout << "Edit candidates for this election? (y/n): ";
+    char ch;
+    std::cin >> ch;
+    if (ch == 'y' || ch == 'Y') {
+        std::ofstream cfile("data/candidates_" + electionID + ".txt", std::ios::app);
+        std::string cid, uname, party;
+        std::cout << "Add candidate (id username party, or 'end' to finish):\n";
+        while (true) {
+            std::cin >> cid;
+            if (cid == "end") break;
+            std::cin >> uname >> party;
+            cfile << cid << "," << uname << "," << party << ",0\n";
+        }
+        cfile.close();
+    }
+    std::cout << "Election edited.\n";
+}
+
+void Admin::createElection()
+{
+    std::cout << "\n=== Create Election ===\n";
+    std::string id, title, type;
+    time_t startTime, endTime;
+    int criteria;
+    std::cout << "Enter Election ID: ";
+    std::cin >> id;
+    std::cout << "Enter Title: ";
+    std::cin.ignore();
+    std::getline(std::cin, title);
+    std::cout << "Enter Type (Local/National): ";
+    std::cin >> type;
+    std::cout << "Enter Start Time (as epoch): ";
+    std::cin >> startTime;
+    std::cout << "Enter End Time (as epoch): ";
+    std::cin >> endTime;
+    std::cout << "Enter Eligibility Criteria (min age): ";
+    std::cin >> criteria;
+    Election* election = nullptr;
+    if (type == "Local") {
+        election = new LocalElection(id, title, startTime, endTime, criteria);
+    } else if (type == "Regional") {
+        election = new RegionalElection(id, title, startTime, endTime, criteria);
+    } else {
+        election = new NationalElection(id, title, startTime, endTime, criteria);
+    }
+    char addMore = 'y';
+    while (addMore == 'y' || addMore == 'Y') {
+        addCandidateToElection(election);
+        std::cout << "Add another candidate? (y/n): ";
+        std::cin >> addMore;
+    }
+    // TODO: Save election to file or memory as per your design
+    std::cout << "Election created successfully!\n";
+}
+
+void Admin::addCandidateToElection(Election* election)
+{
+    std::string cid, uname, pwd, party;
+    std::cout << "Enter Candidate ID: ";
+    std::cin >> cid;
+    std::cout << "Enter Candidate Username: ";
+    std::cin >> uname;
+    std::cout << "Enter Candidate Password: ";
+    std::cin >> pwd;
+    std::cout << "Enter Candidate Party: ";
+    std::cin >> party;
+    Candidate* candidate = new Candidate(cid, uname, pwd, party);
+    election->addCandidate(candidate);
+    std::cout << "Candidate added to election!\n";
+}
+
+void Admin::updateCandidateInElection(Election* election)
+{
+    if (!election) {
+        std::cout << "Invalid election!\n";
+        return;
+    }
+    std::string cid;
+    std::cout << "Enter Candidate ID to update: ";
+    std::cin >> cid;
+    bool found = false;
+    // Access the dynamic array directly (no STL)
+    for (int i = 0; i < election->numCandidates; ++i) {
+        Candidate* candidate = election->candidates[i];
+        if (candidate->getID() == cid) {
+            std::string uname, pwd, party;
+            std::cout << "Enter new username: ";
+            std::cin >> uname;
+            std::cout << "Enter new password: ";
+            std::cin >> pwd;
+            std::cout << "Enter new party: ";
+            std::cin >> party;
+            candidate->setParty(party);
+            // Assume setters for username/password, or update directly if public
+            candidate->username = uname;
+            candidate->password = pwd;
+            std::cout << "Candidate updated!\n";
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        std::cout << "Candidate not found in this election.\n";
+    }
+}
+
+void Admin::deleteCandidateFromElection(Election* election)
+{
+    if (!election) {
+        std::cout << "Invalid election!\n";
+        return;
+    }
+    std::string cid;
+    std::cout << "Enter Candidate ID to delete: ";
+    std::cin >> cid;
+    bool found = false;
+    for (int i = 0; i < election->numCandidates; ++i) {
+        Candidate* candidate = election->candidates[i];
+        if (candidate->getID() == cid) {
+            delete candidate;
+            // Shift remaining candidates left
+            for (int j = i; j < election->numCandidates - 1; ++j) {
+                election->candidates[j] = election->candidates[j + 1];
+            }
+            election->numCandidates--;
+            std::cout << "Candidate deleted from election!\n";
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        std::cout << "Candidate not found in this election.\n";
+    }
+} {
     std::string id, title, startDate, endDate, type;
     int criteria;
     std::cout << "Enter Election ID: ";
@@ -190,22 +431,13 @@ void Admin::createElection() {
 void Admin::viewElections() {
     std::ifstream file("data/elections.txt");
     std::string line;
-
+    time_t now = time(nullptr);
     std::cout << "=== Elections ===\n";
     while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string id, title, startDate, endDate, type;
-        int criteria;
-        std::getline(ss, id, ',');
-        std::getline(ss, title, ',');
-        std::getline(ss, startDate, ',');
-        std::getline(ss, endDate, ',');
-        std::getline(ss, type, ',');
-        ss >> criteria;
-
-        std::cout << "ID: " << id << "\nTitle: " << title << "\nStart Date: " << startDate
-                  << "\nEnd Date: " << endDate << "\nType: " << type
-                  << "\nMinimum Age for Eligibility: " << criteria << "\n\n";
+        ElectionInfo info;
+        if (parseElectionLine(line, info)) {
+            displayElection(info, now);
+        }
     }
 }
 

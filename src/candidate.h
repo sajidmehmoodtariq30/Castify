@@ -7,10 +7,13 @@
 class Candidate : public User {
 private:
     std::string party;
+    int voteCount;
 
 public:
     Candidate(const std::string& id, const std::string& username, const std::string& password, const std::string& party);
-    
+    void incrementVotes();
+    int getVoteCount() const;
+    std::string getCandidateInfo() const;
     std::string getParty() const;
     void setParty(const std::string& newParty);
     

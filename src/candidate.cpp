@@ -2,7 +2,19 @@
 #include <iostream>
 
 Candidate::Candidate(const std::string& id, const std::string& username, const std::string& password, const std::string& party)
-    : User(id, username, password, "candidate"), party(party) {}
+    : User(id, username, password, "candidate"), party(party), voteCount(0) {}
+
+void Candidate::incrementVotes() {
+    voteCount++;
+}
+
+int Candidate::getVoteCount() const {
+    return voteCount;
+}
+
+std::string Candidate::getCandidateInfo() const {
+    return "ID: " + id + ", Username: " + username + ", Party: " + party + ", Votes: " + std::to_string(voteCount);
+}
 
 std::string Candidate::getParty() const {
     return party;

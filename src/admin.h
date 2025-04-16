@@ -14,10 +14,15 @@ public:
     void viewCandidates();
     void updateCandidate();
     void deleteCandidate();
+    void addCandidateToElection(Election* election);
+    void updateCandidateInElection(Election* election);
+    void deleteCandidateFromElection(Election* election);
     void addVoter();
     void createElection();
     void viewElections();
     void startElection();
+    void viewResults(Election* election);
+    void editElection(); // Edit election duration and candidate list
 };
 
 #endif

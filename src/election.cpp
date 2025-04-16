@@ -1,6 +1,8 @@
 #include "election.h"
 #include <iostream>
 #include <ctime> // For time functions
+#include <fstream>
+#include <cstring>
 
 std::string Election::getID() const { return id; }
 
@@ -41,6 +43,32 @@ void Election::setElectionType(const std::string& type) {
 
 void Election::setEligibilityCriteria(int criteria) {
     eligibilityCriteria = criteria;
+}
+
+void Election::displayResults() const {
+    std::cout << "\nElection Results for: " << title << " (ID: " << id << ")\n";
+    int* voteCounts = new int[numCandidates];
+    for (int i = 0; i < numCandidates; ++i) voteCounts[i] = 0;
+    std::ifstream file("data/votes.txt");
+    char line[256];
+    while (file.getline(line, 256)) {
+        char* voterID = strtok(line, ",");
+        char* candidateID = strtok(NULL, ",");
+        char* electionID = strtok(NULL, ",");
+        if (electionID && id == electionID) {
+            for (int i = 0; i < numCandidates; ++i) {
+                if (candidateID && candidates[i]->getID() == candidateID) {
+                    voteCounts[i]++;
+                }
+            }
+        }
+    }
+    std::cout << "-------------------------------------\n";
+    for (int i = 0; i < numCandidates; ++i) {
+        std::cout << candidates[i]->getUsername() << " (" << candidates[i]->getID() << ") - Votes: " << voteCounts[i] << std::endl;
+    }
+    std::cout << "-------------------------------------\n";
+    delete[] voteCounts;
 }
 
 void Election::displayElectionDetails() const {

@@ -22,6 +22,7 @@ public:
     ~Election();
     void addCandidate(Candidate* candidate);
     virtual void displayElectionDetails() const;
+    virtual void displayResults() const;
     void displayCandidates() const;
     bool isElectionActive() const; // Check if the election is active
     std::string getID() const;
