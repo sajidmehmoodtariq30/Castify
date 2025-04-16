@@ -19,6 +19,7 @@ private:
 
 public:
     Election(std::string id, std::string title, time_t startTime, time_t endTime, std::string type, int criteria);
+    void removeCandidateByIndex(int idx);
     ~Election();
     void addCandidate(Candidate* candidate);
     virtual void displayElectionDetails() const;
@@ -30,6 +31,12 @@ public:
     void setEligibilityCriteria(int criteria);
     std::string getElectionType() const;
     int getEligibilityCriteria() const;
+    // --- Added for modular access ---
+    int getNumCandidates() const { return numCandidates; }
+    Candidate** getCandidates() const { return candidates; }
+    std::string getTitle() const { return title; }
+    time_t getStartTime() const { return startTime; }
+    time_t getEndTime() const { return endTime; }
 };
 
 #endif

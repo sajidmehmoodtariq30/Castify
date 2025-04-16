@@ -1,51 +1,9 @@
 #include "admin.h"
 #include "utils.h"
-    std::string id, title, type, criteria;
-    time_t start, end;
-};
-
-
-    std::string id, name, party;
-    int votes;
-};
-
-
-    std::stringstream ss(line);
-    std::string startStr, endStr;
-    if (!std::getline(ss, info.id, ',')) return false;
-    if (!std::getline(ss, info.title, ',')) return false;
-    if (!std::getline(ss, startStr, ',')) return false;
-    if (!std::getline(ss, endStr, ',')) return false;
-    if (!std::getline(ss, info.type, ',')) return false;
-    if (!std::getline(ss, info.criteria, ',')) info.criteria = "";
-    info.start = std::stol(startStr);
-    info.end = std::stol(endStr);
-    return true;
-}
-
-
-    return now >= info.start && now <= info.end;
-}
-
-
-    std::string status = isElectionActive(info, now) ? "[ACTIVE]" : "[INACTIVE]";
-    std::cout << info.id << ": " << info.title << " (" << info.type << ") " << status << std::endl;
-}
-
-
-    std::stringstream ss(line);
-    std::string votesStr;
-    if (!std::getline(ss, info.id, ',')) return false;
-    if (!std::getline(ss, info.name, ',')) return false;
-    if (!std::getline(ss, info.party, ',')) return false;
-    if (!std::getline(ss, votesStr, ',')) votesStr = "0";
-    info.votes = std::stoi(votesStr);
-    return true;
-}
-
-
-    std::cout << info.id << ": " << info.name << " (" << info.party << ") Votes: " << info.votes << std::endl;
-}
+#include <iostream>
+#include "localelection.h"
+#include "regionalelection.h"
+#include "nationalelection.h"
 
 void Admin::viewResults(Election* election) {
     if (election) {
@@ -220,13 +178,13 @@ void Admin::addVoter()
 void saveElectionToFile(Election* election) {
     std::ofstream file("data/elections.txt", std::ios::app);
     if (file.is_open()) {
-        file << election->getID() << "," << election->title << "," << election->startTime << "," << election->endTime << "," << election->getElectionType() << "," << election->getEligibilityCriteria() << "\n";
+        file << election->getID() << "," << election->getTitle() << "," << election->getStartTime() << "," << election->getEndTime() << "," << election->getElectionType() << "," << election->getEligibilityCriteria() << "\n";
         file.close();
     }
     // Save candidates for this election
     std::ofstream cfile("data/candidates_" + election->getID() + ".txt");
-    for (int i = 0; i < election->numCandidates; ++i) {
-        Candidate* c = election->candidates[i];
+    for (int i = 0; i < election->getNumCandidates(); ++i) {
+        Candidate* c = election->getCandidates()[i];
         cfile << c->getID() << "," << c->getUsername() << "," << c->getParty() << "," << c->getVoteCount() << "\n";
     }
     cfile.close();
@@ -348,8 +306,8 @@ void Admin::updateCandidateInElection(Election* election)
     std::cin >> cid;
     bool found = false;
     // Access the dynamic array directly (no STL)
-    for (int i = 0; i < election->numCandidates; ++i) {
-        Candidate* candidate = election->candidates[i];
+    for (int i = 0; i < election->getNumCandidates(); ++i) {
+        Candidate* candidate = election->getCandidates()[i];
         if (candidate->getID() == cid) {
             std::string uname, pwd, party;
             std::cout << "Enter new username: ";
@@ -360,8 +318,8 @@ void Admin::updateCandidateInElection(Election* election)
             std::cin >> party;
             candidate->setParty(party);
             // Assume setters for username/password, or update directly if public
-            candidate->username = uname;
-            candidate->password = pwd;
+            /* TODO: Add setUsername() to Candidate/User if you want to update username */
+            /* TODO: Add setPassword() to Candidate/User if you want to update password */
             std::cout << "Candidate updated!\n";
             found = true;
             break;
@@ -382,15 +340,10 @@ void Admin::deleteCandidateFromElection(Election* election)
     std::cout << "Enter Candidate ID to delete: ";
     std::cin >> cid;
     bool found = false;
-    for (int i = 0; i < election->numCandidates; ++i) {
-        Candidate* candidate = election->candidates[i];
+    for (int i = 0; i < election->getNumCandidates(); ++i) {
+        Candidate* candidate = election->getCandidates()[i];
         if (candidate->getID() == cid) {
-            delete candidate;
-            // Shift remaining candidates left
-            for (int j = i; j < election->numCandidates - 1; ++j) {
-                election->candidates[j] = election->candidates[j + 1];
-            }
-            election->numCandidates--;
+            election->removeCandidateByIndex(i);
             std::cout << "Candidate deleted from election!\n";
             found = true;
             break;
@@ -398,33 +351,6 @@ void Admin::deleteCandidateFromElection(Election* election)
     }
     if (!found) {
         std::cout << "Candidate not found in this election.\n";
-    }
-} {
-    std::string id, title, startDate, endDate, type;
-    int criteria;
-    std::cout << "Enter Election ID: ";
-    std::cin >> id;
-    std::cout << "Enter Election Title: ";
-    std::cin.ignore();
-    std::getline(std::cin, title);
-    std::cout << "Enter Start Date (YYYY-MM-DD): ";
-    std::cin >> startDate;
-    std::cout << "Enter End Date (YYYY-MM-DD): ";
-    std::cin >> endDate;
-    std::cout << "Enter Election Type (e.g., General, Local): ";
-    std::cin.ignore();
-    std::getline(std::cin, type);
-    std::cout << "Enter Minimum Age for Eligibility: ";
-    std::cin >> criteria;
-
-    // Save election to file
-    std::ofstream file("data/elections.txt", std::ios::app);
-    if (file.is_open()) {
-        file << id << "," << title << "," << startDate << "," << endDate << "," << type << "," << criteria << "\n";
-        file.close();
-        std::cout << "Election created successfully.\n";
-    } else {
-        std::cout << "Error: Unable to save election.\n";
     }
 }
 

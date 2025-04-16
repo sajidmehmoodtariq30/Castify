@@ -2,6 +2,7 @@
 #define VOTER_H
 
 #include "user.h"
+#include "election.h"
 
 class Voter : public User {
 public:

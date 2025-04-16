@@ -4,52 +4,8 @@
 #include <sstream>
 #include <ctime>
 #include "utils.h"
-    std::string id, title, type, criteria;
-    time_t start, end;
-};
-
-
-    std::string id, name, party;
-    int votes;
-};
-
-
-    std::stringstream ss(line);
-    std::string startStr, endStr;
-    if (!std::getline(ss, info.id, ',')) return false;
-    if (!std::getline(ss, info.title, ',')) return false;
-    if (!std::getline(ss, startStr, ',')) return false;
-    if (!std::getline(ss, endStr, ',')) return false;
-    if (!std::getline(ss, info.type, ',')) return false;
-    if (!std::getline(ss, info.criteria, ',')) info.criteria = "";
-    info.start = std::stol(startStr);
-    info.end = std::stol(endStr);
-    return true;
-}
-
-
-    return now >= info.start && now <= info.end;
-}
-
-
-    std::string status = isElectionActive(info, now) ? "[ACTIVE]" : "[INACTIVE]";
-    std::cout << info.id << ": " << info.title << " (" << info.type << ") " << status << std::endl;
-}
-
-
-    std::stringstream ss(line);
-    std::string votesStr;
-    if (!std::getline(ss, info.id, ',')) return false;
-    if (!std::getline(ss, info.name, ',')) return false;
-    if (!std::getline(ss, info.party, ',')) return false;
-    if (!std::getline(ss, votesStr, ',')) votesStr = "0";
-    info.votes = std::stoi(votesStr);
-    return true;
-}
-
-
-    std::cout << info.id << ": " << info.name << " (" << info.party << ") Votes: " << info.votes << std::endl;
-}
+#include <cstring>
+#include "vote.h"
 
 bool Voter::hasVoted(const std::string& electionID) const {
     std::ifstream file("data/votes.txt");
@@ -220,82 +176,6 @@ void Voter::displayMenu()
             file.close();
         }
         else if (choice == 6)
-        {
-            std::cout << "Logging out...\n";
-            break;
-        }
-        else
-        {
-            std::cout << "Invalid choice. Please try again.\n";
-        }
-    }
-}
-{
-    while (true)
-    {
-        std::cout << "\n=== Voter Menu ===\n";
-        std::cout << "1. View Candidates\n";
-        std::cout << "2. Vote for a Candidate\n";
-        std::cout << "3. Logout\n";
-        std::cout << "Enter your choice: ";
-        int choice;
-        std::cin >> choice;
-
-        if (choice == 1)
-        {
-            FileHandler::displayCandidates();
-        }
-        else if (choice == 2)
-        {
-            std::string electionID, candidateID;
-            std::cout << "Enter Election ID: ";
-            std::cin >> electionID;
-
-            // Check if the election is active
-            std::ifstream file("data/elections.txt");
-            std::string line;
-            bool isActive = false;
-
-            while (std::getline(file, line))
-            {
-                std::stringstream ss(line);
-                std::string id;
-                time_t startTime, endTime;
-                std::getline(ss, id, ',');
-                if (id == electionID)
-                {
-                    ss >> startTime >> endTime;
-                    time_t currentTime = time(nullptr);
-                    if (currentTime >= startTime && currentTime <= endTime)
-                    {
-                        isActive = true;
-                    }
-                    break;
-                }
-            }
-            file.close();
-
-            if (!isActive)
-            {
-                std::cout << "Error: Election is not active or has ended.\n";
-                continue;
-            }
-
-            std::cout << "Enter Candidate ID: ";
-            std::cin >> candidateID;
-
-            if (FileHandler::hasVoted(getID(), electionID))
-            {
-                std::cout << "You have already voted in this election.\n";
-            }
-            else
-            {
-                Candidate candidate(candidateID, "", "", ""); // Placeholder
-                FileHandler::saveVote(this, &candidate, electionID);
-                std::cout << "Your vote has been recorded.\n";
-            }
-        }
-        else if (choice == 3)
         {
             std::cout << "Logging out...\n";
             break;

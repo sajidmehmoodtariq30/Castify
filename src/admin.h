@@ -3,6 +3,7 @@
 
 #include "user.h"
 #include "candidate.h"
+#include "election.h"
 
 class Admin : public User {
 public:

@@ -85,3 +85,21 @@ void Election::displayCandidates() const {
         candidates[i]->displayProfile();
     }
 }
+
+std::string Election::getElectionType() const {
+    return electionType;
+}
+
+int Election::getEligibilityCriteria() const {
+    return eligibilityCriteria;
+}
+
+// Implementation for candidate removal
+void Election::removeCandidateByIndex(int idx) {
+    if (idx < 0 || idx >= numCandidates) return;
+    delete candidates[idx];
+    for (int i = idx; i < numCandidates - 1; ++i) {
+        candidates[i] = candidates[i + 1];
+    }
+    numCandidates--;
+}

@@ -8,20 +8,20 @@ void NationalElection::displayElectionDetails() const {
     std::cout << "Party-wise Vote Breakdown:\n";
     // Count votes per party
     struct PartyCount { std::string party; int votes; };
-    PartyCount* partyCounts = new PartyCount[numCandidates];
+    PartyCount* partyCounts = new PartyCount[getNumCandidates()];
     int partyCount = 0;
-    for (int i = 0; i < numCandidates; ++i) {
-        std::string party = candidates[i]->getParty();
+    for (int i = 0; i < getNumCandidates(); ++i) {
+        std::string party = getCandidates()[i]->getParty();
         int idx = -1;
         for (int j = 0; j < partyCount; ++j) {
             if (partyCounts[j].party == party) { idx = j; break; }
         }
         if (idx == -1) {
             partyCounts[partyCount].party = party;
-            partyCounts[partyCount].votes = candidates[i]->getVoteCount();
+            partyCounts[partyCount].votes = getCandidates()[i]->getVoteCount();
             ++partyCount;
         } else {
-            partyCounts[idx].votes += candidates[i]->getVoteCount();
+            partyCounts[idx].votes += getCandidates()[i]->getVoteCount();
         }
     }
     for (int i = 0; i < partyCount; ++i) {
